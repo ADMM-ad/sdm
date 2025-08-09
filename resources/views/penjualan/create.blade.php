@@ -37,9 +37,9 @@
 @endif
     <form action="{{ route('penjualan.store') }}" method="POST" enctype="multipart/form-data">
         @csrf
-        <div class="card card-primary">
-            <div class="card-header bg-success text-white">
-                <h3 class="card-title"> <i class="fas fa-file-invoice-dollar text-white mr-2"></i>Input Penjualan</h3>
+        <div class="card card-primary card-outline " style="border-color: #00518d;">
+            <div class="card-header ">
+                <h3 class="card-title"> <i class="fas fa-plus-circle mr-2" style="color: #00518d;"></i>Input Penjualan</h3>
             </div>
             <div class="card-body">
                 <!-- Data Penjualan -->
@@ -62,7 +62,7 @@
     </select>
 </div>
 
-                    <div class="col-md-6">
+                    <div class="col-md-6 mt-2">
                         <label>Nama Pembeli</label>
                         <input type="text" name="nama_pembeli" class="form-control" required>
                     </div>
@@ -179,7 +179,7 @@
 
 
   
-                <button type="submit" class="btn btn-primary">Simpan Penjualan</button>
+                <button type="submit" class="btn btn-success">Simpan Penjualan</button>
             </div>
         </div>
         <input type="hidden" name="destination_id" id="destination_id">

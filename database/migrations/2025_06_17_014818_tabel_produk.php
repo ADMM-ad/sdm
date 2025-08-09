@@ -17,7 +17,8 @@ return new class extends Migration
             $table->float('hpp');
             $table->float('harga_jual');
             $table->string('detail_produk');
-            $table->enum('jenis_produk', ['stiker', 'non_stiker']);
+            $table->foreignId('jenis_produk_id')->nullable()->constrained('jenis_produk')->onDelete('set null');
+            $table->foreignId('jenis_lead_id')->nullable()->constrained('jenis_lead')->onDelete('set null');
             $table->timestamps();
         });
     }

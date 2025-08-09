@@ -15,6 +15,7 @@ class Iklan extends Model
         'kode_kampanye_id',
         'hasil',
         'jumlah_dibelanjakan',
+        'jenis_lead_id',
     ];
 
     // Relasi ke model Kampanye (kode_kampanye_cs)
@@ -22,4 +23,10 @@ class Iklan extends Model
     {
         return $this->belongsTo(Kampanye::class, 'kode_kampanye_id');
     }
+
+    
+public function jenisLead()
+{
+    return $this->belongsTo(JenisLead::class);
+}
 }

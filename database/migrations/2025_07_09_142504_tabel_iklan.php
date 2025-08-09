@@ -17,6 +17,7 @@ return new class extends Migration
     $table->foreignId('kode_kampanye_id')->constrained('kode_kampanye_cs')->onDelete('cascade');
     $table->integer('hasil');
     $table->integer('jumlah_dibelanjakan');
+     $table->foreignId('jenis_lead_id')->nullable()->constrained('jenis_lead')->onDelete('set null');
     $table->timestamps();
 });
     }

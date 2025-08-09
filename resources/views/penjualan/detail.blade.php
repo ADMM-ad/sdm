@@ -3,9 +3,9 @@
 @section('content')
 <div class="container">
 
-    <div class="card card-primary card-outline mt-3 p-3" style="border-color: #31beb4;">
+    <div class="card card-primary card-outline mt-3 " style="border-color: #00518d;">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <h4 class="card-title mb-0"> <i class="fas fa-file-invoice" style="color: #31beb4;"></i> Detail Penjualan </h4>
+            <h4 class="card-title mb-0"> <i class="fas fa-file-invoice" style="color: #00518d;"></i> Detail Penjualan </h4>
             
         </div>
 
@@ -84,6 +84,7 @@
         </div>
         
         </div>
+        
         </div>
   
 
@@ -97,11 +98,11 @@
 
 @if(auth()->user()->role === 'admin')
     <a href="{{ route('penjualan.laporan', $queryParams) }}" class="btn btn-secondary mb-3">
-        <i class="fas fa-arrow-left"></i> Kembali
+        <i class="fas fa-reply"></i> Kembali
     </a>
 @else
     <a href="{{ route('penjualan.index', $queryParams) }}" class="btn btn-secondary mb-3">
-        <i class="fas fa-arrow-left"></i> Kembali
+        <i class="fas fa-reply"></i> Kembali
     </a>
 @endif
     

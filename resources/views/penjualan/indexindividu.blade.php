@@ -3,6 +3,7 @@
 @section('content')
 
 <div class="container mt-3">
+   
     @if(session('success'))
     <div class="alert alert-success alert-dismissible fade show d-flex align-items-center" role="alert">
         <i class="fas fa-check-circle mr-2"></i>
@@ -46,9 +47,15 @@
            value="{{ request('nama_pembeli') }}">
 </div>
 
-        <div class="col-md-2 d-flex align-items-end mb-2">
-            <button type="submit" class="btn btn-primary mr-2">Filter</button>
-            <a href="{{ route('penjualan.index') }}" class="btn btn-secondary">Reset</a>
+        <div class="col-md-6 col-12">
+            <div class="row">
+                <div class="col-6">
+                    <button type="submit" class="btn btn-primary w-100">Filter</button>
+                </div>
+                <div class="col-6">
+                    <a href="{{ route('penjualan.index') }}" class="btn btn-secondary w-100">Reset</a>
+                </div>
+            </div>
         </div>
     </div>
 </form>
@@ -62,7 +69,7 @@
     <div class="col-12">
         <div class="card">
             <div class="card-header">
-                <h3 class="card-title"><i class="fas fa-file-invoice mr-1" style="color: #1DCD9F;"></i>Laporan Closing Penjualan Anda</h3>
+                <h3 class="card-title"><i class="fas fa-file-invoice mr-1" style="color: #00518d;"></i>Laporan Closing Penjualan Anda</h3>
             </div>
             <div class="card-body table-responsive p-0">
                 <table class="table table-hover table-bordered text-nowrap">
@@ -70,7 +77,8 @@
     <tr>
         <th>No</th> <!-- Ubah dari ID ke No -->
         <th>Tanggal</th>
-        <th>Jam</th>
+      
+        <th>No Pesanan</th>
         <th>Nama Pembeli</th>
         <th>Alamat</th>
         <th>No HP</th>
@@ -82,6 +90,7 @@
         <th>Nama Produk</th>
         <th>Jumlah</th>
         <th>Total Harga</th>
+        <th>Ongkir</th>
         <th>Total Bayar</th>
         <th>Aksi</th>
     </tr>
@@ -93,8 +102,9 @@
         <tr>
             <td>{{ $no++ }}</td> <!-- Ganti ID dengan nomor urut -->
             <td>{{ $p->tanggal }}</td>
+          
             <td>{{ $p->nama_pembeli }}</td>
-            <td>{{ \Carbon\Carbon::parse($p->created_at)->format('H:i') }}</td>
+            <td>{{ $p->order_id }}</td>
             <td>{{ $p->alamat }} ({{ $p->kodepos }})</td>
             <td>{{ $p->no_hp }}</td>
             <td>{{$p->kode_pos}}</td>
@@ -111,7 +121,8 @@
                 @if($index === 0)
                     <td rowspan="{{ $p->detailPenjualan->count() }}">{{ $no++ }}</td> <!-- No Urut -->
                     <td rowspan="{{ $p->detailPenjualan->count() }}">{{ $p->tanggal }}</td>
-                    <td rowspan="{{ $p->detailPenjualan->count() }}">{{ \Carbon\Carbon::parse($p->created_at)->format('H:i') }}</td>
+       
+                    <td rowspan="{{ $p->detailPenjualan->count() }}">{{ $p->order_id }}</td>
                     <td rowspan="{{ $p->detailPenjualan->count() }}">{{ $p->nama_pembeli }}</td>
                     <td rowspan="{{ $p->detailPenjualan->count() }}">{{ $p->alamat }} ({{ $p->kodepos }})</td>
                     <td rowspan="{{ $p->detailPenjualan->count() }}">{{ $p->no_hp }}</td>
@@ -125,6 +136,9 @@
                 <td class="px-3 py-2">{{ $dp->jumlah }}</td>
                 <td class="px-3 py-2">Rp{{ number_format($dp->total_harga, 0, ',', '.') }}</td>
                 @if($index === 0)
+                <td rowspan="{{ $p->detailPenjualan->count() }}">
+                        Rp{{ number_format($p->ongkir, 0, ',', '.') }}
+                    </td>
                     <td rowspan="{{ $p->detailPenjualan->count() }}">
                         <strong>Rp{{ number_format($p->total_bayar, 0, ',', '.') }}</strong>
                     </td>

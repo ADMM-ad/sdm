@@ -34,13 +34,21 @@
 <div class="row">
     <div class="col-12">
         <div class="card">
-            <div class="card-header">
-                <h3 class="card-title"><i class="fas fa-tasks mr-1" style="color: #31beb4;"></i> Jobdesk Saya</h3>
-            </div>
+            <div class="card-header d-flex align-items-center justify-content-between">
+    <h3 class="card-title mb-0 text-nowrap flex-grow-1">
+        <i class="fas fa-briefcase mr-1" style="color: #00518d;"></i> Jobdesk Saya
+    </h3>
+    <div class="d-flex justify-content-end">
+        <button type="button" class="btn btn-success" data-toggle="modal" data-target="#bulkSelesaiModal">
+            <i class="fas fa-check-circle mr-1"></i>Selesaikan
+        </button>
+    </div>
+</div>
             <div class="card-body table-responsive p-0">
                 <table class="table table-hover table-bordered text-nowrap">
                     <thead>
                         <tr>
+                            <th><input type="checkbox" id="selectAll"></th>
                             <th>No</th>
                             <th>Tanggal Pesanan</th>
                             <th>Tanggal Mengerjakan</th>
@@ -64,8 +72,11 @@
                             @foreach($p->detailPenjualan as $index => $dp)
                                 <tr>
                                     @if($index === 0)
+                                     <td rowspan="{{ $p->detailPenjualan->count() }}">
+    <input type="checkbox" class="export-checkbox" value="{{ $p->id }}">
+</td>
                                         <td rowspan="{{ $p->detailPenjualan->count() }}">{{ $no++ }}</td>
-                                        <td rowspan="{{ $p->detailPenjualan->count() }}">{{ ($p->tanggal) }}</td>
+                                        <td rowspan="{{ $p->detailPenjualan->count() }}">{{ \Carbon\Carbon::parse($p->tanggal)->format('d M Y H:i') }}</td>
                                         <td rowspan="{{ $p->detailPenjualan->count() }}">
         {{ optional($p->jobdeskEditor)->created_at ? \Carbon\Carbon::parse($p->jobdeskEditor->created_at)->format('d M Y H:i') : '-' }}
     </td>
@@ -87,7 +98,7 @@
                                         </td>
                                         <td rowspan="{{ $p->detailPenjualan->count() }}">
     <!-- Tombol trigger modal -->
-    <button type="button" class="btn btn-sm btn-primary btn-selesai"
+    <button type="button" class="btn btn-sm btn-success btn-selesai"
         data-id="{{ $jd->id }}"
         data-toggle="modal"
         data-target="#selesaiModal">
@@ -157,7 +168,33 @@
 </div>
 
 
-  
+  <!-- Modal Tandai Selesai -->
+<div class="modal fade" id="bulkSelesaiModal" tabindex="-1" role="dialog" aria-labelledby="bulkSelesaiModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <form id="bulkSelesaiForm" method="POST" action="{{ route('editor.jobdesk.bulkSelesai') }}">
+        @csrf
+        <input type="hidden" name="selected_ids_selesai" id="selected_ids_selesai">
+
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="bulkSelesaiModalLabel">Tandai Selesai</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Tutup">
+              <span>&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            Apakah Anda yakin ingin menandai jobdesk ini sebagai <strong>selesai</strong>?
+            <div id="modalSelesaiError" class="text-danger mt-2"></div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+            <button type="button" class="btn btn-warning" id="submitBulkSelesai">Ya, Tandai Selesai</button>
+          </div>
+        </div>
+    </form>
+  </div>
+</div>
+
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
@@ -176,7 +213,20 @@
         var form = document.getElementById('deleteForm');
         form.action = action;
         $('#confirmDeleteModal').modal('show');
-    }s
+    }
+      document.getElementById('submitBulkSelesai').addEventListener('click', function() {
+        const selected = [...document.querySelectorAll('.export-checkbox:checked')].map(cb => cb.value);
+
+        if (selected.length === 0) {
+            document.getElementById('modalSelesaiError').textContent = "Pilih minimal satu data penjualan.";
+            return;
+        }
+
+        document.getElementById('modalSelesaiError').textContent = "";
+
+        document.getElementById('selected_ids_selesai').value = selected.join(',');
+        document.getElementById('bulkSelesaiForm').submit();
+    });
 </script>
 
 @endsection

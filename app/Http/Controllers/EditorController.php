@@ -14,6 +14,16 @@ class EditorController extends Controller
     public function jobdesk(Request $request)
 {
     $query = Penjualan::with(['user', 'detailPenjualan.produk']);
+
+  // Default: rentang tanggal bulan ini
+    if (!$request->filled('daterange')) {
+        $startDefault = Carbon::now()->startOfMonth()->format('Y-m-d');
+        $endDefault = Carbon::now()->endOfMonth()->format('Y-m-d');
+        $request->merge([
+            'daterange' => "$startDefault - $endDefault"
+        ]);
+    }
+
     // Filter berdasarkan platform (shopee / nonshopee)
     if ($request->filled('platform')) {
         if ($request->platform === 'nonshopee') {
@@ -23,18 +33,17 @@ class EditorController extends Controller
         }
     }
 
+    // Filter berdasarkan rentang tanggal
     if ($request->filled('daterange')) {
-    [$start, $end] = explode(' - ', $request->daterange);
-
-    try {
-        $startDate = Carbon::createFromFormat('Y-m-d', trim($start))->startOfDay();
-        $endDate = Carbon::createFromFormat('Y-m-d', trim($end))->endOfDay();
-
-        $query->whereBetween('tanggal', [$startDate, $endDate]);
-    } catch (\Exception $e) {
-        // Optional: log error jika format salah
+        [$start, $end] = explode(' - ', $request->daterange);
+        try {
+            $startDate = Carbon::createFromFormat('Y-m-d', trim($start))->startOfDay();
+            $endDate = Carbon::createFromFormat('Y-m-d', trim($end))->endOfDay();
+            $query->whereBetween('tanggal', [$startDate, $endDate]);
+        } catch (\Exception $e) {
+            // Optional: log error jika format salah
+        }
     }
-}
 
  if ($request->filled('produk')) {
         $query->whereHas('detailPenjualan.produk', function ($q) use ($request) {
@@ -44,9 +53,10 @@ class EditorController extends Controller
 
     $penjualan = $query->orderByDesc('tanggal')->get();
        $produkList = Produk::orderBy('nama_produk')->get();
+$editors = User::where('role', 'editor')->get();
 
 
-    return view('editor.jobdesk', compact('penjualan', 'produkList'));
+    return view('editor.jobdesk', compact('penjualan', 'produkList','editors'));
 }
 
 
@@ -72,6 +82,60 @@ public function ambilJobdesk(Request $request)
     ]);
 
     return redirect()->back()->with('success', 'Jobdesk berhasil diambil.');
+}
+
+public function updateEditor(Request $request)
+{
+    $request->validate([
+        'penjualan_id' => 'required|exists:penjualan,id',
+        'user_id' => 'nullable|exists:users,id',
+    ]);
+
+    // Update atau buat jobdesk_editor
+    Editor::updateOrCreate(
+        ['penjualan_id' => $request->penjualan_id],
+        [
+            'user_id' => $request->user_id,
+            'status' => 'onproses',
+        ]
+    );
+
+    return redirect()->back()->with('success', 'Editor berhasil diperbarui.');
+}
+
+public function bulkUpdateEditor(Request $request)
+{
+    $request->validate([
+        'selected_ids' => 'required|string',
+        'user_id' => 'required|exists:users,id',
+    ]);
+
+    $penjualanIds = explode(',', $request->selected_ids);
+
+    foreach ($penjualanIds as $penjualanId) {
+        Editor::updateOrCreate(
+            ['penjualan_id' => $penjualanId],
+            ['user_id' => $request->user_id, 'status' => 'onproses']
+        );
+    }
+
+    return redirect()->back()->with('success', 'Editor berhasil di-assign ke penjualan terpilih.');
+}
+
+public function bulkSelesai(Request $request)
+{
+    $request->validate([
+        'selected_ids_selesai' => 'required|string',
+    ]);
+
+    $penjualanIds = explode(',', $request->selected_ids_selesai);
+
+    // Update semua jobdesk_editor terkait
+    \DB::table('jobdesk_editor')
+        ->whereIn('penjualan_id', $penjualanIds)
+        ->update(['status' => 'selesai']);
+
+    return redirect()->back()->with('success', 'Status berhasil diubah menjadi selesai.');
 }
 
 
@@ -116,21 +180,41 @@ public function hapus($id)
 
     return redirect()->back()->with('success', 'Jobdesk berhasil dihapus.');
 }
-public function done()
+
+public function done(Request $request)
 {
     $user = Auth::user();
 
+    // Default: bulan ini
+    if (!$request->filled('daterange')) {
+        $startDefault = Carbon::now()->startOfMonth()->format('Y-m-d');
+        $endDefault = Carbon::now()->endOfMonth()->format('Y-m-d');
+        $request->merge([
+            'daterange' => "$startDefault - $endDefault"
+        ]);
+    }
+
     $jobdesks = Editor::with('penjualan.detailPenjualan.produk')
         ->where('user_id', $user->id)
-        ->where('status', 'selesai')
-        ->join('penjualan', 'jobdesk_editor.penjualan_id', '=', 'penjualan.id')
-        ->orderBy('penjualan.tanggal', 'asc')
-        ->select('jobdesk_editor.*')
-        ->paginate(50)
-->withQueryString();
+        ->where('status', 'selesai');
+
+    // Filter berdasarkan rentang tanggal
+    if ($request->filled('daterange')) {
+        [$start, $end] = explode(' - ', $request->daterange);
+        try {
+            $startDate = Carbon::createFromFormat('Y-m-d', trim($start))->startOfDay();
+            $endDate = Carbon::createFromFormat('Y-m-d', trim($end))->endOfDay();
+            $jobdesks->whereBetween('created_at', [$startDate, $endDate]);
+        } catch (\Exception $e) {
+            // Optional: log error jika format salah
+        }
+    }
+
+    $jobdesks = $jobdesks->orderByDesc('created_at')->paginate(500)->onEachSide(1)->withQueryString();
 
     return view('editor.done', compact('jobdesks'));
 }
+
 
 public function laporan(Request $request)
 {
@@ -164,7 +248,7 @@ public function laporan(Request $request)
         });
     }
 
-    $jobdesk = $query->paginate(50)->withQueryString();
+    $jobdesk = $query->paginate(500)->onEachSide(1)->withQueryString();
 
 
     // Untuk dropdown nama editor

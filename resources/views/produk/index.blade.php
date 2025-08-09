@@ -33,9 +33,9 @@
     <div class="col-md-12 mb-1">
         <form method="GET" action="{{ route('produk.index') }}">
             <div class="input-group">
-                <input type="text" name="search" class="form-control" placeholder="Cari nama produk..." value="{{ request('search') }}">
+                <input type="text" name="search" class="form-control" placeholder="Cari Nama Produk..." value="{{ request('search') }}">
                 <div class="input-group-append">
-                    <button type="submit" class="btn btn-primary" style="background-color: #26948E; border-color: #26948E;">
+                    <button type="submit" class="btn btn-primary" style="background-color: #00518d; border-color: #00518d;">
                         <i class="fas fa-search"></i>
                     </button>
                 </div>
@@ -44,18 +44,20 @@
     </div>
 </div>
 
-<!-- Tombol Tambah -->
-<div class="mb-3">
-    <a href="{{ route('produk.create') }}" class="btn btn-success">Tambah Produk</a>
-</div>
 
 <!-- Tabel Produk -->
 <div class="row">
     <div class="col-12">
         <div class="card">
-            <div class="card-header">
-                <h3 class="card-title"><i class="fas fa-box mr-1" style="color: #31beb4;"></i>Daftar Produk</h3>
-            </div>
+            <div class="card-header d-flex justify-content-end align-items-center">
+    <h3 class="card-title mb-0 mr-auto">
+        <i class="fas fa-box mr-1" style="color: #00518d;"></i>Daftar Produk
+    </h3>
+    <a href="{{ route('produk.create') }}" class="btn-sm" style="background-color: #00518d;">
+        <i class="fas fa-plus-circle" style="color: #ffffff;"></i>
+    </a>
+</div>
+
             <div class="card-body table-responsive p-0">
                 <table class="table table-hover table-bordered text-nowrap">
                     <thead>
@@ -65,7 +67,8 @@
                             <th>Detail Produk</th>
                             <th>HPP</th>
                             <th>Harga Jual</th>
-                            <th>Jenis Produk</th>
+                            <th>Kategori Produk</th>
+                            <th>Jenis Lead</th>
                             <th>Aksi</th>
                         </tr>
                     </thead>
@@ -77,10 +80,12 @@
                                 <td>{{ $item->detail_produk }}</td>
                                 <td>Rp {{ number_format($item->hpp, 0, ',', '.') }}</td>
                                 <td>Rp {{ number_format($item->harga_jual, 0, ',', '.') }}</td>
-                                <td>{{ $item->jenis_produk === 'stiker' ? 'Stiker' : ($item->jenis_produk === 'non_stiker' ? 'Non Stiker' : '-') }}</td>
+                                <td>{{ $item->jenisProduk?->kategori ?? '-' }}</td>
+                                <td>{{ $item->jenisLead?->jenis ?? '-' }}</td>
+
                                 <td>
-                                    <a href="{{ route('produk.edit', $item->id) }}" class="btn btn-warning btn-sm">Edit</a>
-                                    <button type="button" class="btn btn-danger btn-sm" onclick="confirmDelete('{{ route('produk.destroy', $item->id) }}')">Hapus</button>
+                                    <a href="{{ route('produk.edit', $item->id) }}" class="btn btn-warning btn-sm"> <i class="fas fa-edit"></i></a>
+                                    <button type="button" class="btn btn-danger btn-sm" onclick="confirmDelete('{{ route('produk.destroy', $item->id) }}')"><i class="fas fa-trash-alt"></i></button>
                                 </td>
                             </tr>
                         @endforeach

@@ -15,17 +15,17 @@
     @endif
 
 
-<form method="GET" action="{{ route('editor.laporan') }}" class="mb-3">
+<form method="GET" action="{{ route('editor.laporan') }}" class="mb-2">
     <div class="row">
         {{-- Filter Tanggal --}}
-        <div class="col-md-6 mb-2">
+        <div class="col-12 col-md-6 mb-2">
             <input type="text" id="daterange" name="daterange" class="form-control"
-                   placeholder="Pilih rentang tanggal"
+                   placeholder="Pilih Rentang Tanggal Pengerjaan"
                    value="{{ request('daterange') }}">
         </div>
 
         {{-- Filter Nama Editor --}}
-        <div class="col-md-6 mb-2">
+        <div class="col-12 col-md-6 mb-2">
             <select name="editor" class="form-control">
                 <option value="">Semua Editor</option>
                 @foreach($semuaEditor as $editor)
@@ -37,7 +37,7 @@
         </div>
 
         {{-- Filter Status --}}
-        <div class="col-md-6 mb-2">
+        <div class="col-12 col-md-6 mb-2">
             <select name="status" class="form-control">
                 <option value="">Semua Status</option>
                 <option value="onproses" {{ request('status') == 'onproses' ? 'selected' : '' }}>On Proses</option>
@@ -46,16 +46,19 @@
         </div>
 
         {{-- Search Nama Pembeli --}}
-        <div class="col-md-6 mb-2">
+        <div class="col-12 col-md-6 mb-2">
             <input type="text" name="nama_pembeli" class="form-control"
                    placeholder="Cari Nama Pembeli"
                    value="{{ request('nama_pembeli') }}">
         </div>
 
-        <div class="col-md-1 ">
+        {{-- Tombol Filter --}}
+        <div class="col-6 col-md-2 mb-2">
             <button type="submit" class="btn btn-primary w-100">Filter</button>
         </div>
-        <div class="col-md-1">
+
+        {{-- Tombol Reset --}}
+        <div class="col-6 col-md-2 mb-2">
             <a href="{{ route('editor.laporan') }}" class="btn btn-secondary w-100">Reset</a>
         </div>
     </div>
@@ -70,7 +73,7 @@
     <div class="col-12">
         <div class="card">
             <div class="card-header">
-                <h3 class="card-title"><i class="fas fa-box mr-1" style="color: #31beb4;"></i>Daftar Jobdesk Editor</h3>
+                <h3 class="card-title"><i class="fas fa-briefcase mr-1" style="color: #00518d;"></i>Laporan Jobdesk Editor</h3>
             </div>
             <div class="card-body table-responsive p-0">
                 <table class="table table-hover table-bordered text-nowrap">

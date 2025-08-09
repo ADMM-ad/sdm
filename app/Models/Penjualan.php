@@ -37,6 +37,7 @@ class Penjualan extends Model
     'alasan_batal',
     'status_pembatalan',
     'catatan_penjual',
+    'kunci_hpp',
 ];
 
 

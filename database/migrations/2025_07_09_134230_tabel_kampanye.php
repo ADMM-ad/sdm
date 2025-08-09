@@ -15,6 +15,7 @@ return new class extends Migration
     $table->id();
     $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
     $table->string('kode_kampanye');
+    $table->foreignId('jenis_lead_id')->nullable()->constrained('jenis_lead')->onDelete('set null');
     $table->timestamps();
 });
     }

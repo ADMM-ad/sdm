@@ -41,6 +41,7 @@ return new class extends Migration
             $table->string('alasan_batal')->nullable();
             $table->string('status_pembatalan')->nullable();
             $table->string('catatan_penjual')->nullable();
+            $table->enum('kunci_hpp', ['ya', 'tidak'])->nullable();
             $table->timestamps();
         });
 
@@ -50,7 +51,11 @@ return new class extends Migration
             $table->foreignId('id_penjualan')->constrained('penjualan')->onDelete('cascade');
             $table->integer('jumlah'); 
             $table->integer('total_harga');
-            $table->string('nama_variasi')->nullable(); 
+            $table->string('nama_variasi')->nullable();
+            $table->double('hasil_pembagian_omset')->nullable();
+            $table->double('hasil_pembagian_ongkir')->nullable();  
+            $table->double('hasil_pembagian_biayacod')->nullable();  
+            $table->double('hasil_pembagian_cashback')->nullable();    
             $table->timestamps();
         });
     }

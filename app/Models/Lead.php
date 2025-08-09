@@ -14,6 +14,7 @@ class Lead extends Model
         'user_id',
         'jumlah_lead',
         'tanggal',
+         'jenis_lead_id',
     ];
 
     // Relasi: Lead dimiliki oleh satu User
@@ -27,5 +28,11 @@ class Lead extends Model
     return Penjualan::whereColumn('penjualan.tanggal', 'leads.tanggal')
                     ->whereColumn('penjualan.id_user', 'leads.user_id');
 }
+
+public function jenisLead()
+{
+    return $this->belongsTo(JenisLead::class, 'jenis_lead_id');
+}
+
 
 }

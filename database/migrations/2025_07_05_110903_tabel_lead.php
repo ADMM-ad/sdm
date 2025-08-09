@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->integer('jumlah_lead');
             $table->date('tanggal');
+             $table->foreignId('jenis_lead_id')->nullable()->constrained('jenis_lead')->onDelete('set null');
             $table->timestamps();
         });
     }

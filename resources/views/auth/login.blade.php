@@ -12,9 +12,9 @@
 
     <style>
         body {
-            background-color: #1DCD9F;
+            background-color: #00518d;
             color: #ffffff;
-            height: 100vh;
+            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -27,6 +27,7 @@
             border-radius: 8px;
             overflow: hidden;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            animation: slideUp 1s ease-out;
         }
 
         .logo-container {
@@ -48,16 +49,29 @@
         }
 
         .btn-primary {
-            background-color: #31beb4;
-            border-color: #31beb4;
+            background-color: #00518d;
+            border-color: #00518d;
         }
 
         .btn-primary:hover {
-            background-color: #28a7a3;
-            border-color: #28a7a3;
+            background-color: #0A6ABF;
+            border-color: #0A6ABF;
         }
 
+        @keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
         @media (min-width: 768px) {
+            
             .card {
                 max-width: 600px;
             }
@@ -82,7 +96,7 @@
                 <div class="row g-0 flex-column flex-md-row">
                     <!-- Logo (Atas di HP, Kiri di Desktop) -->
                     <div class="col-12 col-md-4 logo-container" style="background-color:#ffffff">
-                        <img src="{{ asset('gambar/logo2.png') }}" alt="Logo" class="logo" >
+                        <img src="{{ asset('gambar/logowarna.png') }}" alt="Logo" class="logo" >
                     </div>
 
                     <!-- Form Login -->
@@ -99,7 +113,7 @@
                                 @csrf
 
                                 <div class="mb-3">
-                                    <label for="username" class="text-dark"><i class="bi bi-person-fill" style="color: #31beb4; margin-right: 5px;"></i>Username</label>
+                                    <label for="username" class="text-dark"><i class="bi bi-person-fill" style="color: #00518d; margin-right: 5px;"></i>Username</label>
                                     <input id="username" type="text" class="form-control @error('username') is-invalid @enderror" 
                                            name="username" value="{{ old('username') }}" 
                                            placeholder="Masukkan Username Anda" required autofocus>
@@ -111,7 +125,7 @@
                                 </div>
 
                                 <div class="mb-3">
-    <label for="password" class="text-dark"><i class="bi bi-lock-fill" style="color: #31beb4; margin-right: 5px;"></i>Password</label>
+    <label for="password" class="text-dark"><i class="bi bi-lock-fill" style="color: #00518d; margin-right: 5px;"></i>Password</label>
     <div class="input-group">
         <input id="password" type="password" class="form-control @error('password') is-invalid @enderror" 
                name="password" placeholder="Masukkan Password Anda" required>
@@ -136,7 +150,7 @@
 
     <!-- Lupa Password -->
     <div>
-        <a href="{" class="text-decoration-none text-dark">
+        <a href="/lupapassword" class="text-decoration-none text-dark">
             Lupa Password?
         </a>
     </div>

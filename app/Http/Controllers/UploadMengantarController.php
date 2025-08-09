@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Penjualan;
+use App\Models\DetailPenjualan;
 use Spatie\SimpleExcel\SimpleExcelReader;
 
 class UploadMengantarController extends Controller
@@ -37,7 +38,7 @@ class UploadMengantarController extends Controller
 
 
    // ✅ Cek apakah status menyebabkan total_bayar di-nol-kan
-                $statusInvalid = ['rts', 'batal', 'undelivered', 'delivery return', 'deliveri return'];
+                $statusInvalid = ['rts', 'batal'];
                 $normalizedStatus = strtolower(trim($lastStatus));
                 $setTotalBayarToZero = in_array($normalizedStatus, $statusInvalid);
 
@@ -53,6 +54,23 @@ class UploadMengantarController extends Controller
                         'total_bayar'    => $setTotalBayarToZero ? 0 : $penjualan->total_bayar,
                     ]);
                     \Log::info("Update by order_id: {$orderId}");
+
+                      $totalHargaProduk = DetailPenjualan::where('id_penjualan', $penjualan->id)->sum('total_harga');
+
+                    if ($totalHargaProduk > 0) {
+                        $pembagianOngkir     = $penjualan->ongkir / $totalHargaProduk;
+                        $pembagianBiayaCOD   = $penjualan->biaya_cod / $totalHargaProduk;
+                        $pembagianCashback   = $penjualan->cashback / $totalHargaProduk;
+
+                        $details = DetailPenjualan::where('id_penjualan', $penjualan->id)->get();
+
+                        foreach ($details as $detail) {
+                            $detail->hasil_pembagian_ongkir     = round($detail->total_harga * $pembagianOngkir);
+                            $detail->hasil_pembagian_biayacod   = round($detail->total_harga * $pembagianBiayaCOD);
+                            $detail->hasil_pembagian_cashback   = round($detail->total_harga * $pembagianCashback);
+                            $detail->save();
+                        }
+                    }
                     return;
                 }
 
@@ -71,6 +89,24 @@ class UploadMengantarController extends Controller
                         'total_bayar'    => $setTotalBayarToZero ? 0 : $penjualanByName->total_bayar,
                     ]);
                     \Log::info("Update by nama_pembeli: {$cleanedName} → order_id updated to {$orderId}");
+
+ $totalHargaProduk = DetailPenjualan::where('id_penjualan', $penjualanByName->id)->sum('total_harga');
+
+                    if ($totalHargaProduk > 0) {
+                        $pembagianOngkir     = $penjualanByName->ongkir / $totalHargaProduk;
+                        $pembagianBiayaCOD   = $penjualanByName->biaya_cod / $totalHargaProduk;
+                        $pembagianCashback   = $penjualanByName->cashback / $totalHargaProduk;
+
+                        $details = DetailPenjualan::where('id_penjualan', $penjualanByName->id)->get();
+
+                        foreach ($details as $detail) {
+                            $detail->hasil_pembagian_ongkir     = round($detail->total_harga * $pembagianOngkir);
+                            $detail->hasil_pembagian_biayacod   = round($detail->total_harga * $pembagianBiayaCOD);
+                            $detail->hasil_pembagian_cashback   = round($detail->total_harga * $pembagianCashback);
+                            $detail->save();
+                        }
+                    }
+
                     return;
                 }
 

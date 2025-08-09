@@ -14,21 +14,32 @@
 @endif
 
 
-{{-- Filter Tanggal --}}
 <form method="GET" action="{{ route('penjualan.cekshopee') }}" class="mb-3">
     <div class="row">
-        <div class="col-md-4 mb-2">
+        {{-- Input Tanggal --}}
+        <div class="col-12 col-md-4 mb-2">
             <input type="text" id="daterange" name="daterange" class="form-control"
-                placeholder="Pilih rentang tanggal" value="{{ request('daterange') }}">
+                   placeholder="Pilih rentang tanggal" value="{{ request('daterange') }}">
         </div>
-        <div class="col-md-2 mb-2">
+
+        {{-- Input Nama Pembeli --}}
+        <div class="col-12 col-md-4 mb-2">
+            <input type="text" name="nama_pembeli" class="form-control"
+                   placeholder="Cari Nama Pembeli" value="{{ request('nama_pembeli') }}">
+        </div>
+
+        {{-- Tombol Filter --}}
+        <div class="col-6 col-md-2 mb-2">
             <button type="submit" class="btn btn-primary w-100">Filter</button>
         </div>
-        <div class="col-md-2 mb-2">
+
+        {{-- Tombol Reset --}}
+        <div class="col-6 col-md-2 mb-2">
             <a href="{{ route('penjualan.cekshopee') }}" class="btn btn-secondary w-100">Reset</a>
         </div>
     </div>
 </form>
+
 
 @if($penjualan->isEmpty())
     <div class="alert alert-info">Tidak ada data penjualan Shopee yang harus di cek.</div>
@@ -38,7 +49,7 @@
                 <div class="card">
                     <div class="card-header">
                         <h3 class="card-title">
-                            <i class="fas fa-shopping-bag mr-1" style="color: #1DCD9F;"></i>Pilihan Penjualan Shopee
+                            <i class="fas fa-shopping-bag mr-1" style="color: #00518d;"></i>Pilihan Penjualan Shopee
                         </h3>
                     </div>
                     <div class="card-body table-responsive p-0">
@@ -47,7 +58,7 @@
                         <tr>
                             <th>No</th>
                             <th>Tanggal</th>
-                            <th>Jam Input</th>
+                         
                             <th>Nama CS</th>
                             <th>Nama Pembeli</th>
                             <th>Alamat</th>
@@ -63,7 +74,7 @@
                             <th>Variasi</th>
                             <th>Jumlah</th>
                             <th>Total Harga</th>
-                            <th>Total HPP</th>
+                          
                             <th>Ongkir</th>
                             <th>Total Bayar</th>
                             <th>Aksi</th>
@@ -76,7 +87,7 @@
                                 <tr>
                                     <td>{{ $no++ }}</td>
                                     <td>{{ $p->tanggal }}</td>
-                                    <td>{{ \Carbon\Carbon::parse($p->created_at)->format('H:i') }}</td>
+                                    
                                     <td>{{ $p->user->name ?? '-' }}</td>
                                     <td>{{ $p->nama_pembeli }}</td>
                                     <td>{{ $p->alamat }}</td>
@@ -89,7 +100,7 @@
                                     <td>{{ $p->status_pesanan }}</td>
                                     <td colspan="3" class="text-center text-muted">Belum ada produk</td>
                                     <td>-</td><td>-</td>
-                                    <td>{{ 'Rp ' . number_format($p->total_hpp, 0, ',', '.') }}</td>
+                                    
                                     <td>{{ 'Rp ' . number_format($p->ongkir, 0, ',', '.') }}</td>
                                     <td>{{ 'Rp ' . number_format($p->total_bayar, 0, ',', '.') }}</td>
                                     <td>
@@ -104,7 +115,7 @@
                                         @if($index === 0)
                                             <td rowspan="{{ $p->detailPenjualan->count() }}">{{ $no++ }}</td>
                                             <td rowspan="{{ $p->detailPenjualan->count() }}">{{ $p->tanggal }}</td>
-                                            <td rowspan="{{ $p->detailPenjualan->count() }}">{{ \Carbon\Carbon::parse($p->created_at)->format('H:i') }}</td>
+                                         
                                             <td rowspan="{{ $p->detailPenjualan->count() }}">{{ $p->user->name ?? '-' }}</td>
                                             <td rowspan="{{ $p->detailPenjualan->count() }}">{{ $p->nama_pembeli }}</td>
                                             <td rowspan="{{ $p->detailPenjualan->count() }}">{{ $p->alamat }} ({{ $p->kodepos }})</td>
@@ -124,7 +135,7 @@
                                         <td>{{ $dp->jumlah }}</td>
                                         <td>Rp{{ number_format($dp->total_harga, 0, ',', '.') }}</td>
                                         @if($index === 0)
-                                            <td rowspan="{{ $p->detailPenjualan->count() }}">{{ 'Rp ' . number_format($p->total_hpp, 0, ',', '.') }}</td>
+                                         
                                             <td rowspan="{{ $p->detailPenjualan->count() }}">{{ 'Rp ' . number_format($p->ongkir, 0, ',', '.') }}</td>
                                             <td rowspan="{{ $p->detailPenjualan->count() }}"><strong>Rp{{ number_format($p->total_bayar, 0, ',', '.') }}</strong></td>
                                             <td rowspan="{{ $p->detailPenjualan->count() }}">
@@ -157,7 +168,7 @@
         @csrf
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="confirmModalLabel">Konfirmasi Penugasan</h5>
+            <h5 class="modal-title" id="confirmModalLabel">Konfirmasi Penjualan</h5>
             <button type="button" class="close" data-dismiss="modal" aria-label="Tutup">
               <span aria-hidden="true">&times;</span>
             </button>

@@ -13,6 +13,7 @@ class Kampanye extends Model
     protected $fillable = [
         'user_id',
         'kode_kampanye',
+        'jenis_lead_id',
     ];
 
     // Relasi ke User
@@ -20,4 +21,9 @@ class Kampanye extends Model
     {
         return $this->belongsTo(User::class);
     }
+    public function jenisLead()
+    {
+    return $this->belongsTo(JenisLead::class, 'jenis_lead_id');
+    }
+
 }

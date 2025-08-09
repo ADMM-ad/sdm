@@ -7,7 +7,11 @@ use App\Models\Lead;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Penjualan;
 use App\Models\User;
+use App\Models\JenisLead;
 use Carbon\Carbon;
+use Spatie\SimpleExcel\SimpleExcelReader;
+use Spatie\SimpleExcel\SimpleExcelWriter;
+use Illuminate\Support\Facades\DB;
 class LeadController extends Controller
 {
     
@@ -16,7 +20,8 @@ class LeadController extends Controller
 public function index(Request $request)
 {
     $userId = Auth::id();
-    $query = Lead::where('user_id', $userId);
+    $query = Lead::with('jenisLead')
+                ->where('user_id', $userId);
 
     if ($request->filled('daterange')) {
         $range = explode(' - ', $request->daterange);
@@ -26,17 +31,23 @@ public function index(Request $request)
             $end = Carbon::parse(trim($range[1]))->endOfDay();
             $query->whereBetween('tanggal', [$start, $end]);
         } catch (\Exception $e) {
-            // format salah, abaikan
+            // abaikan jika format salah
         }
+    }
+
+     if ($request->filled('jenis_lead')) {
+        $query->where('jenis_lead_id', $request->jenis_lead);
     }
 
     $lead = $query->orderBy('tanggal', 'desc')->paginate(100)->withQueryString();
 
-    // Tambahkan jumlah penjualan dan persentase ke setiap item
     $lead->getCollection()->transform(function ($item) use ($userId) {
-        $jumlahPenjualan = Penjualan::where('id_user', $userId)
-                                     ->whereDate('tanggal', $item->tanggal)
-                                     ->count();
+        $jumlahPenjualan = Penjualan::where('penjualan.id_user', $userId)
+            ->whereDate('penjualan.tanggal', $item->tanggal)
+            ->whereHas('detailPenjualan.produk', function ($q) use ($item) {
+                $q->where('produk.jenis_lead_id', $item->jenis_lead_id);
+            })
+            ->count();
 
         $item->jumlah_penjualan = $jumlahPenjualan;
         $item->persentase = $item->jumlah_lead > 0
@@ -45,45 +56,51 @@ public function index(Request $request)
 
         return $item;
     });
-
-    return view('lead.index', compact('lead'));
+$semuaJenisLead = JenisLead::orderBy('jenis')->get();
+    return view('lead.index', compact('lead', 'semuaJenisLead'));
 }
 
 
 
 
-     public function create()
-    {
-        return view('lead.create');
-    }
-    public function store(Request $request)
+public function create()
+{
+    $jenis_lead = JenisLead::all();
+    return view('lead.create', compact('jenis_lead'));
+}
+
+
+   public function store(Request $request)
 {
     $request->validate([
         'jumlah_lead' => 'required|integer|min:1',
         'tanggal' => 'required|date',
+        'jenis_lead_id' => 'required|exists:jenis_lead,id',
     ]);
 
     $userId = Auth::id();
     $tanggal = $request->tanggal;
+    $jenisLeadId = $request->jenis_lead_id;
 
-    // Cek apakah data dengan user_id dan tanggal yang sama sudah ada
     $cekDuplikat = Lead::where('user_id', $userId)
                         ->where('tanggal', $tanggal)
+                        ->where('jenis_lead_id', $jenisLeadId)
                         ->first();
 
     if ($cekDuplikat) {
-        return redirect()->back()->with('error', 'Data lead untuk tanggal tersebut sudah ada!');
+        return redirect()->back()->with('error', 'Data lead untuk tanggal dan jenis lead tersebut sudah ada!');
     }
 
-    // Simpan data jika belum ada duplikat
     Lead::create([
         'user_id' => $userId,
         'jumlah_lead' => $request->jumlah_lead,
         'tanggal' => $tanggal,
+        'jenis_lead_id' => $jenisLeadId,
     ]);
 
     return redirect()->back()->with('success', 'Data lead berhasil ditambahkan!');
 }
+
 
 public function edit($id)
 {
@@ -91,7 +108,9 @@ public function edit($id)
                 ->where('user_id', Auth::id())
                 ->firstOrFail();
 
-    return view('lead.edit', compact('lead'));
+    $jenisLeadList = JenisLead::all(); // Ambil daftar jenis lead
+
+    return view('lead.edit', compact('lead', 'jenisLeadList'));
 }
 
 public function update(Request $request, $id)
@@ -99,25 +118,28 @@ public function update(Request $request, $id)
     $request->validate([
         'jumlah_lead' => 'required|integer|min:1',
         'tanggal' => 'required|date',
+        'jenis_lead_id' => 'required|exists:jenis_lead,id',
     ]);
 
     $lead = Lead::where('id', $id)
                 ->where('user_id', Auth::id())
                 ->firstOrFail();
 
-    // Cek duplikat tanggal lain selain data ini sendiri
+    // Cek duplikat tanggal & jenis_lead_id (selain data ini sendiri)
     $duplikat = Lead::where('user_id', Auth::id())
                     ->where('tanggal', $request->tanggal)
+                    ->where('jenis_lead_id', $request->jenis_lead_id)
                     ->where('id', '!=', $id)
                     ->exists();
 
     if ($duplikat) {
-        return redirect()->back()->with('error', 'Tanggal tersebut sudah digunakan untuk data lead lain!');
+        return redirect()->back()->with('error', 'Data dengan tanggal dan jenis lead tersebut sudah ada!');
     }
 
     $lead->update([
         'jumlah_lead' => $request->jumlah_lead,
         'tanggal' => $request->tanggal,
+        'jenis_lead_id' => $request->jenis_lead_id,
     ]);
 
     return redirect()->route('lead.index')->with('success', 'Data lead berhasil diperbarui!');
@@ -134,17 +156,49 @@ public function destroy($id)
     return redirect()->route('lead.index')->with('success', 'Data lead berhasil dihapus!');
 }
 
-public function laporan()
+public function laporan(Request $request)
 {
-    // Ambil data dengan user relasi
-    $semuaLead = Lead::with('user')->orderBy('tanggal', 'desc')->paginate(20);
+    $query = Lead::with(['user', 'jenisLead'])->orderBy('tanggal', 'desc');
 
-    // Transformasi data untuk menambahkan jumlah_penjualan & persentase
+    // Filter berdasarkan user/CS
+    if ($request->filled('cs')) {
+        $query->where('user_id', $request->cs);
+    }
+
+    // Filter berdasarkan jenis lead
+    if ($request->filled('jenis_lead')) {
+        $query->where('jenis_lead_id', $request->jenis_lead);
+    }
+
+    // Filter berdasarkan rentang tanggal
+   if ($request->filled('daterange')) {
+    try {
+        [$start, $end] = explode(' - ', $request->daterange);
+        $startDate = \Carbon\Carbon::createFromFormat('Y-m-d', trim($start))->startOfDay();
+        $endDate = \Carbon\Carbon::createFromFormat('Y-m-d', trim($end))->endOfDay();
+        $query->whereBetween('tanggal', [$startDate, $endDate]);
+    } catch (\Exception $e) {
+        // Abaikan jika format salah
+    }
+}
+
+
+    $semuaLead = $query->paginate(1000);
+
     $semuaLead->getCollection()->transform(function ($lead) {
-        if (!empty($lead->user_id) && !empty($lead->tanggal)) {
-            $lead->jumlah_penjualan = Penjualan::where('id_user', $lead->user_id)
-                                               ->whereDate('tanggal', $lead->tanggal)
-                                               ->count();
+        if (!empty($lead->user_id) && !empty($lead->tanggal) && !empty($lead->jenis_lead_id)) {
+            $penjualanIds = Penjualan::where('id_user', $lead->user_id)
+                ->whereDate('tanggal', $lead->tanggal)
+                ->pluck('id');
+
+            $jumlahPenjualan = \DB::table('detail_penjualan')
+                ->join('produk', 'detail_penjualan.id_produk', '=', 'produk.id')
+                ->whereIn('detail_penjualan.id_penjualan', $penjualanIds)
+                ->where('produk.jenis_lead_id', $lead->jenis_lead_id)
+                ->distinct('detail_penjualan.id_penjualan')
+                ->count('detail_penjualan.id_penjualan');
+
+            $lead->jumlah_penjualan = $jumlahPenjualan;
         } else {
             $lead->jumlah_penjualan = 0;
         }
@@ -156,7 +210,166 @@ public function laporan()
         return $lead;
     });
 
-    return view('lead.laporan', compact('semuaLead'));
+    // Semua user untuk filter dropdown
+    $semuaUser = User::where('role', 'customerservice')->orderBy('name')->get();
+  $semuaJenisLead = JenisLead::orderBy('jenis')->get();
+
+    return view('lead.laporan', compact('semuaLead', 'semuaUser', 'semuaJenisLead'));
+}
+
+public function importForm()
+{
+    return view('lead.import');
+}
+public function import(Request $request)
+{
+    $request->validate([
+        'file' => 'required|mimes:xlsx,xls',
+    ]);
+
+    try {
+        $path = $request->file('file')->store('temp');
+        $fullPath = storage_path('app/' . $path);
+
+        $rows = SimpleExcelReader::create($fullPath)->getRows();
+
+        DB::beginTransaction();
+
+        foreach ($rows as $row) {
+            $namaCs = trim($row['Nama CS'] ?? '');
+            $tanggalRaw = $row['Tanggal'] ?? '';
+            $tanggal = $tanggalRaw instanceof \DateTimeInterface
+                ? $tanggalRaw->format('Y-m-d')
+                : trim((string) $tanggalRaw);
+            $jumlahLead = (int) trim($row['Jumlah Lead'] ?? 0);
+            $jenisLeadNama = trim($row['Jenis Lead'] ?? '');
+
+            if (!$namaCs || !$tanggal || !$jumlahLead || !$jenisLeadNama) {
+                continue; // Skip jika ada kolom kosong
+            }
+
+            // Ambil ID user
+            $userId = User::where('name', $namaCs)->value('id');
+            if (!$userId) {
+                $userId = 1; // fallback jika CS tidak ditemukan
+            }
+
+            // Ambil jenis lead
+            $jenisLead = JenisLead::where('jenis', $jenisLeadNama)->first();
+            if (!$jenisLead) {
+                continue; // skip jika jenis lead tidak ditemukan
+            }
+
+            // Parse tanggal
+            try {
+                $tanggalFormat = Carbon::parse($tanggal)->format('Y-m-d');
+            } catch (\Exception $e) {
+                continue; // skip jika tanggal tidak valid
+            }
+
+            // Cek apakah data sudah ada
+            $existing = DB::table('lead')
+                ->where('user_id', $userId)
+                ->where('tanggal', $tanggalFormat)
+                ->where('jenis_lead_id', $jenisLead->id)
+                ->first();
+
+            if ($existing) {
+                // Update jika sudah ada
+                DB::table('lead')
+                    ->where('id', $existing->id)
+                    ->update([
+                        'jumlah_lead' => $jumlahLead,
+                        'updated_at' => now(),
+                    ]);
+            } else {
+                // Insert jika belum ada
+                DB::table('lead')->insert([
+                    'user_id' => $userId,
+                    'tanggal' => $tanggalFormat,
+                    'jumlah_lead' => $jumlahLead,
+                    'jenis_lead_id' => $jenisLead->id,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+        }
+
+        DB::commit();
+        return back()->with('success', 'Import lead berhasil!');
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return back()->with('error', 'Terjadi kesalahan saat import: ' . $e->getMessage());
+    }
+}
+
+
+public function downloadTemplate(): StreamedResponse
+{
+    $fileName = 'template_import_lead.xlsx';
+
+    return SimpleExcelWriter::streamDownload($fileName)
+        ->addHeader([
+            'Nama CS',
+            'Tanggal',
+            'Jumlah Lead',
+            'Jenis Lead',
+        ]);
+}
+
+
+public function export(Request $request)
+{
+    $query = Lead::with(['user', 'jenisLead']);
+
+    if ($request->filled('cs')) {
+        $query->where('user_id', $request->cs);
+    }
+
+    if ($request->filled('jenis_lead')) {
+        $query->where('jenis_lead_id', $request->jenis_lead);
+    }
+
+     if ($request->filled('daterange')) {
+                $tanggalRange = explode(' - ', $request->daterange);
+                if (count($tanggalRange) == 2) {
+                    try {
+                        $startDate = Carbon::createFromFormat('Y-m-d', $tanggalRange[0])->startOfDay();
+                        $endDate = Carbon::createFromFormat('Y-m-d', $tanggalRange[1])->endOfDay();
+                        $query->whereBetween('tanggal', [$startDate, $endDate]);
+                    } catch (\Exception $e) {
+                        // Format salah, skip
+                    }
+                }
+            }
+
+    $data = $query->get();
+
+    $filePath = storage_path('lead_export.xlsx');
+
+    $writer = SimpleExcelWriter::create($filePath)->addHeader([
+        'Tanggal',
+        'Nama CS',
+        'Jumlah Lead',
+       
+       
+        'Jenis Lead',
+    ]);
+
+    foreach ($data as $item) {
+        
+
+        $writer->addRow([
+            Carbon::parse($item->tanggal)->format('d-m-Y'),
+            $item->user->name ?? 'Tidak Diketahui',
+            $item->jumlah_lead,
+           
+       
+            $item->jenisLead->jenis ?? '-',
+        ]);
+    }
+
+    return response()->download($filePath)->deleteFileAfterSend(true);
 }
 
 }

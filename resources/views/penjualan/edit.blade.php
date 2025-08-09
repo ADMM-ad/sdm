@@ -5,9 +5,9 @@
     <form action="{{ route('penjualan.update', $penjualan->id) }}" method="POST" enctype="multipart/form-data">
         @csrf
         @method('PUT')
-        <div class="card card-primary">
-            <div class="card-header bg-success text-white">
-                <h3 class="card-title">Edit Penjualan</h3>
+        <div class="card card-primary card-outline " style="border-color: #00518d;">
+            <div class="card-header ">
+                <h3 class="card-title"> <i class="fas fa-edit mr-2" style="color: #00518d;"></i>Edit Penjualan</h3>
             </div>
             <div class="card-body">
                 <!-- Data Penjualan -->
@@ -170,13 +170,13 @@
 @foreach(request()->query() as $key => $value)
     <input type="hidden" name="_filter[{{ $key }}]" value="{{ $value }}">
 @endforeach
-                <button type="submit" class="btn btn-success mt-2"><i class="fas fa-edit"></i> Update</button>
+                <button type="submit" class="btn btn-warning mt-2"><i class="fas fa-edit"></i> Update</button>
                  @php
     $backRoute = auth()->user()->role === 'admin' ? route('penjualan.laporan') : route('penjualan.index');
 @endphp
 
 <a href="{{ url()->previous() }}" class="btn btn-secondary mt-2 ">
-    <i class="fas fa-arrow-left"></i> Kembali
+    <i class="fas fa-reply"></i> Kembali
 </a>
             </div>
         </div>

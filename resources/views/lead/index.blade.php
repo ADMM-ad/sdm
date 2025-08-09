@@ -38,17 +38,30 @@
 
 <form method="GET" action="{{ route('lead.index') }}" class="mb-3">
     <div class="row">
-        <div class="col-md-6 mb-2">
+        <div class="col-12 col-md-4 col-lg-4 mb-2">
             <input type="text" id="daterange" name="daterange" class="form-control"
                    placeholder="Pilih rentang tanggal"
                    value="{{ request('daterange') }}">
         </div>
-        <div class="col-md-6 mb-2">
-            <button type="submit" class="btn btn-primary">Filter</button>
-            <a href="{{ route('lead.index') }}" class="btn btn-secondary">Reset</a>
+        <div class="col-12 col-md-4 col-lg-4 mb-2">
+            <select name="jenis_lead" class="form-control">
+                <option value="">Semua Jenis Lead</option>
+                @foreach($semuaJenisLead as $jl)
+                    <option value="{{ $jl->id }}" {{ request('jenis_lead') == $jl->id ? 'selected' : '' }}>
+                        {{ $jl->jenis }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+        <div class="col-6 col-md-2 col-lg-2 mb-2">
+            <button type="submit" class="btn btn-primary w-100">Filter</button>
+        </div>
+        <div class="col-6 col-md-2 col-lg-2 mb-2">
+            <a href="{{ route('lead.index') }}" class="btn btn-secondary w-100">Reset</a>
         </div>
     </div>
 </form>
+
 
 
 <!-- Tabel Lead -->
@@ -56,7 +69,7 @@
     <div class="col-12">
         <div class="card">
             <div class="card-header">
-                <h3 class="card-title"><i class="fas fa-file-invoice mr-1" style="color: #31beb4;"></i>Laporan Lead Anda</h3>
+                <h3 class="card-title"><i class="fas fa-file-invoice mr-1" style="color: #00518d;"></i>Laporan Lead Anda</h3>
             </div>
             <div class="card-body table-responsive p-0">
                 <table class="table table-hover table-bordered text-nowrap">
@@ -68,6 +81,7 @@
                            
                             <th>Jumlah Penjualan</th>
 <th>Persentase</th>
+<th>Jenis Lead</th>
 
                             <th>Aksi</th>
                         </tr>
@@ -84,6 +98,8 @@
         {{ $item->persentase }}%
     </span>
 </td>
+<td>{{ $item->jenisLead?->jenis ?? '-' }}</td>
+
                                 <td>
                                     <a href="{{ route('lead.edit', $item->id) }}" class="btn btn-warning btn-sm"><i class="fas fa-edit"></i> </a>
                                     <button type="button" class="btn btn-danger btn-sm" onclick="confirmDelete('{{ route('lead.destroy', $item->id) }}')"><i class="fas fa-trash-alt"></i> </button>

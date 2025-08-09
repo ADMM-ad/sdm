@@ -28,30 +28,30 @@
 
 
     {{-- Kartu Profil --}}
-    <div class="card card-primary card-outline mt-3 mb-3 p-3" style="border-color: #31beb4;">
+    <div class="card card-primary card-outline  p-3" style="border-color: #00518d;">
         <div class="card-header">
             <h4 class="card-title">
-                <i class="fas fa-id-card" style="color: #31beb4"></i>
+                <i class="fas fa-id-card" style="color: #00518d"></i>
                 Profil Anda
             </h4>
         </div>
         <div class="card-body">
-            <div class="row mb-2">
-                <div class="col-md-3 fw-bold">Nama</div>
-                <div class="col-md-9">{{ $user->name }}</div>
-            </div>
-            <div class="row mb-2">
-                <div class="col-md-3 fw-bold">Username</div>
-                <div class="col-md-9">{{ $user->username }}</div>
-            </div>
-            <div class="row mb-2">
-                <div class="col-md-3 fw-bold">Role</div>
-                <div class="col-md-9">{{ $user->role }}</div>
-            </div>
+           <div class="row mb-2">
+    <div class="col-4 col-md-3 fw-bold">Nama : </div>
+    <div class="col-8 col-md-9">{{ $user->name }}</div>
+</div>
+<div class="row mb-2">
+    <div class="col-4 col-md-3 fw-bold">Username : </div>
+    <div class="col-8 col-md-9">{{ $user->username }}</div>
+</div>
+<div class="row mb-2">
+    <div class="col-4 col-md-3 fw-bold">Jabatan : </div>
+    <div class="col-8 col-md-9">{{ $user->role }}</div>
+</div>
         </div>
         <div class="text-end">
-            <a href="{{ route('profil.edit') }}" class="btn" style="background-color : #1DCD9F">
-                <i class="fas fa-edit"></i> Edit Profil
+            <a href="{{ route('profil.edit') }}" class="btn btn-warning" >
+                <i class="fas fa-edit"></i> Update
             </a>
         </div>
     </div>

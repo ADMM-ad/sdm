@@ -58,6 +58,8 @@ class UserController extends Controller
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
 
+session()->flash('welcome', 'Selamat datang, ' . Auth::user()->name . '!');
+
             // Arahkan sesuai role
            $user = Auth::user();
     if ($user->role === 'admin') {
@@ -89,9 +91,16 @@ class UserController extends Controller
     }
 
 
-public function indexCS()
+public function indexCS(Request $request)
 {
-    $users = User::where('role', 'customerservice')->get();
+    $search = $request->input('search');
+
+    $users = User::where('role', 'customerservice')
+        ->when($search, function ($query, $search) {
+            return $query->where('name', 'like', "%{$search}%");
+        })
+        ->get();
+
     return view('user.usercs', compact('users'));
 }
 
@@ -124,9 +133,15 @@ public function destroy($id)
     return redirect()->route('user.cs')->with('success', 'User berhasil dihapus.');
 }
 
-public function indexEd()
+public function indexEd(Request $request)
 {
-    $users = User::where('role', 'editor')->get();
+    $search = $request->input('search');
+
+    $users = User::where('role', 'editor')
+        ->when($search, function ($query, $search) {
+            return $query->where('name', 'like', "%{$search}%");
+        })
+        ->get();
     return view('user.usereditor', compact('users'));
 }
 
@@ -136,6 +151,49 @@ public function destroyEd($id)
     $user->delete();
 
     return redirect()->route('user.editor')->with('success', 'User berhasil dihapus.');
+}
+
+
+public function showForgotForm()
+{
+    return view('auth.lupapassword');
+}
+
+public function checkUsername(Request $request)
+{
+    $request->validate([
+        'username' => 'required|string',
+    ]);
+
+    $user = User::where('username', $request->username)->first();
+
+    if (!$user) {
+        return back()->withErrors(['username' => 'Username tidak ditemukan']);
+    }
+session(['reset_username_verified' => $user->username]);
+    return redirect()->route('password.reset', ['username' => $user->username]);
+}
+
+public function showResetForm($username)
+{
+    return view('auth.gantipassword', compact('username'));
+}
+
+public function resetPassword(Request $request, $username)
+{
+    $request->validate([
+    'password' => 'required|min:6|confirmed',
+], [
+    'password.required' => 'Password wajib diisi.',
+    'password.min' => 'Password minimal harus terdiri dari 6 karakter.',
+    'password.confirmed' => 'Konfirmasi password tidak cocok.',
+]);
+
+    $user = User::where('username', $username)->firstOrFail();
+    $user->password = Hash::make($request->password);
+    $user->save();
+
+    return redirect()->route('login')->with('success', 'Password berhasil diubah.');
 }
 
 

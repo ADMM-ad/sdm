@@ -32,17 +32,12 @@
     right: 0;
     height: 60px;
     padding: 0 1rem;
-    background-color: #1DCD9F !important;
+    background-color: #00518d!important;  
     z-index: 1040;
     display: flex;
     align-items: center;
 }
 
-/* Logo */
-.custom-navbar .navbar-brand img {
-    height: 50px;
-    width: auto;
-}
 
 /* User Photo */
 .custom-navbar .user-photo {
@@ -66,8 +61,12 @@
 .custom-navbar .dropdown-menu {
     background-color: white;
 }
+
+.nav-link.dropdown-toggle::after {
+    color: white;
+}
   .main-sidebar {
-    background-color: #169976 !important;
+    background-color: #1976B2 !important;
     margin-top: 56px;
   }
 
@@ -91,28 +90,28 @@
   }
 /* Mengubah warna background pagination */
 .pagination {
-    background-color: #26948E;  /* Ganti dengan warna yang diinginkan */
+    background-color: #00518d;  /* Ganti dengan warna yang diinginkan */
     border-radius: 0.25rem;  /* Optional: Memberikan border radius pada pagination */
 }
 
 /* Mengubah warna link pagination */
 .pagination .page-link {
     color: white;  /* Warna teks saat tidak aktif */
-    background-color: #26948E;  /* Warna background link */
-    border: 1px solid #26948E;  /* Warna border link */
+    background-color: #00518d;  /* Warna background link */
+    border: 1px solid #00518d;  /* Warna border link */
 }
 
 /* Mengubah warna saat hover pada link */
 .pagination .page-link:hover {
-    background-color: #1d7f74;  /* Warna hover saat link ditekan */
+    background-color: #0A6ABF;  /* Warna hover saat link ditekan */
     color: white;  /* Warna teks saat hover */
 }
 
 /* Mengubah warna aktif pagination */
 .pagination .active .page-link {
-    background-color: #1d7f74;  /* Warna latar belakang saat aktif */
+    background-color: #29B6F6;  /* Warna latar belakang saat aktif */
     color: white;  /* Warna teks saat aktif */
-    border-color: #1d7f74;  /* Warna border saat aktif */
+    border-color: #29B6F6;  /* Warna border saat aktif */
 }
 
 /* Mengubah warna untuk tombol disabled */
@@ -186,7 +185,9 @@
     padding: 4px 6px;
   }
 
- 
+ #lineChart {
+    height: 400px !important;
+}
 
 /* Sembunyikan nama user di tampilan kecil (<820px) */
 @media (max-width: 819px) {
@@ -274,7 +275,15 @@
         min-width: 120px; /* Beri sedikit ruang lebih untuk tombol */
         text-align: center; /* Opsional: Pusatkan tombol jika diinginkan */
     }
-
+.small-box .icon {
+    display: block !important;
+  }
+  .small-box .inner {
+    text-align: left !important;
+  }
+  .small-box .inner p {
+        font-size: 1.2rem !important; /* Sesuaikan ukuran sesuai keinginan */
+    }
 }
 
 
@@ -285,15 +294,18 @@
     <div class="container-fluid d-flex justify-content-between align-items-center">
         <!-- Kiri: Logo -->
         <a class="navbar-brand mb-0" href="#">
-            <img src="{{ asset('gambar/logo.png') }}" alt="Logo">
-        </a>
+    <!-- Logo untuk laptop (md ke atas) -->
+    <img src="{{ asset('gambar/logoputihfull.png') }}" alt="Logo" class="d-none d-md-block" style="height: 50px; width: auto;">
+    <!-- Logo untuk mobile (sm ke bawah) -->
+    <img src="{{ asset('gambar/logoputih.png') }}" alt="Logo Kecil" class="d-block d-md-none" style="height: 40px; width: 40px;">
+</a>
 
         <!-- Kanan: Pushmenu, Profil -->
         <ul class="navbar-nav flex-row align-items-center">
             <!-- Pushmenu Icon -->
             <li class="nav-item mr-3">
                 <a class="nav-link" data-widget="pushmenu" href="#" role="button">
-                    <i class="fas fa-bars"></i>
+                    <i class="fas fa-bars" style="color: #ffffff;"></i>
                 </a>
             </li>
 
@@ -302,14 +314,14 @@
                 <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdown" role="button"
                     data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     <img src="{{ asset('gambar/admin.png') }}" alt="User Photo" class="user-photo">
-                    <span class="user-name ml-2">{{ auth()->user()->name ?? 'User' }}</span>
+                    <span class="user-name ml-2 text-white">{{ auth()->user()->name ?? 'User' }}</span>
                 </a>
-                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
+                <div class="dropdown-menu dropdown-menu-right " aria-labelledby="navbarDropdown" >
                     <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
                         @csrf
                     </form>
                     <a class="dropdown-item" href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                        <i class="fas fa-sign-out-alt" style="color: #31beb4 ;"></i> Logout
+                        <i class="fas fa-sign-out-alt" style="color: #00518d  ;"></i> Logout
                     </a>
                 </div>
             </li>
@@ -387,12 +399,33 @@
                 </li>
               </ul>
             </li>
-            <li class="nav-item">
-              <a href="/produk" class="nav-link">
-                <i class="fas fa-box"></i>
-                <p>Produk</p>
+            
+
+
+            <li class="nav-item has-treeview">
+              <a href="#" class="nav-link">
+                <i class=" fas fa-box"></i>
+                <p>
+                  Produk
+                  <i class="right fas fa-angle-left"></i>
+                </p>
               </a>
+              <ul class="nav nav-treeview">
+                <li class="nav-item">
+                  <a href="/produk" class="nav-link">
+                    <i class="fas fa-list"></i>
+                    <p>Daftar Produk</p>
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a href="/jenisproduk" class="nav-link">
+                    <i class="fas fa-tag"></i>
+                    <p>Kategori Produk</p>
+                  </a>
+                </li>
+              </ul>
             </li>
+
 
 <li class="nav-item has-treeview">
               <a href="#" class="nav-link">
@@ -435,7 +468,7 @@
               <ul class="nav nav-treeview">
                 <li class="nav-item">
                   <a href="/penjualan/create" class="nav-link">
-                    <i class="fas fa-plus"></i>
+                    <i class="fas fa-plus-circle"></i>
                     <p>Input</p>
                   </a>
                 </li>
@@ -466,7 +499,7 @@
               <ul class="nav nav-treeview">
                 <li class="nav-item">
                   <a href="/lead/create" class="nav-link">
-                    <i class="fas fa-plus"></i>
+                    <i class="fas fa-plus-circle"></i>
                     <p>Input</p>
                   </a>
                 </li>
@@ -495,7 +528,18 @@
                     <p>Laporan</p>
                   </a>
                 </li>
-                
+                <li class="nav-item">
+                  <a href="/penjualan/lapshopee" class="nav-link">
+                    <i class="fas fa-shopping-bag"></i>
+                    <p>Shopee Batal</p>
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a href="/penjualan/pembagian" class="nav-link">
+                    <i class="fas fa-money-check"></i>
+                    <p>Pembagian Keuangan</p>
+                  </a>
+                </li>
               </ul>
             </li>
             @endif
@@ -515,6 +559,12 @@
                     <p>Laporan</p>
                   </a>
                 </li>
+                <li class="nav-item">
+                  <a href="/jenis-lead" class="nav-link">
+                    <i class="fas fa-tag"></i>
+                    <p>Jenis Lead</p>
+                  </a>
+                </li>
               </ul>
             </li>
             @endif
@@ -522,7 +572,7 @@
  @if(auth()->user()->role == 'editor')
             <li class="nav-item has-treeview">
               <a href="#" class="nav-link">
-                <i class=" fas fa-tasks"></i>
+                <i class=" fas fa-briefcase"></i>
                 <p>
                   Jobdesk
                   <i class="right fas fa-angle-left"></i>
@@ -531,7 +581,7 @@
               <ul class="nav nav-treeview">
                 <li class="nav-item">
                   <a href="/editor/jobdesk" class="nav-link">
-                    <i class="fas fa-plus"></i>
+                    <i class="fas fa-plus-circle"></i>
                     <p>Ambil Jobdesk</p>
                   </a>
                 </li>
@@ -543,7 +593,7 @@
                 </li>
                 <li class="nav-item">
                   <a href="/editor/jobdesk/done" class="nav-link">
-                    <i class="fas fa-check"></i>
+                    <i class="fas fa-check-circle"></i>
                     <p>Jobdesk Selesai</p>
                   </a>
                 </li>
@@ -554,7 +604,7 @@
 @if(auth()->user()->role == 'admin')
             <li class="nav-item has-treeview">
               <a href="#" class="nav-link">
-                <i class=" fas fa-tasks"></i>
+                <i class=" fas fa-briefcase"></i>
                 <p>
                   Jobdesk
                   <i class="right fas fa-angle-left"></i>
@@ -568,9 +618,22 @@
                   </a>
                 </li>
             @endif
-
-
           </ul>
+
+          @if(auth()->user()->role == 'admin')
+            <li class="nav-item">
+              <a href="/penjualan/import" class="nav-link">
+                <i class="fas fa-file-export"></i>
+                <p>Import Penjualan</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="/lead/import" class="nav-link">
+                <i class="fas fa-file-export"></i>
+                <p>Import Lead</p>
+              </a>
+            </li>
+            @endif
         </nav>
       </div>
     </aside>
@@ -587,11 +650,12 @@
 <script src="{{ asset('template/plugins/jquery/jquery.min.js') }}"></script>
   <script src="{{ asset('template/plugins/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
   <script src="{{ asset('template/dist/js/adminlte.min.js') }}"></script>
-  <script src="{{ asset('template/plugins/chart.js/Chart.min.js') }}"></script>
+
   <script src="{{ asset('template/plugins/jquery-knob/jquery.knob.min.js') }}"></script>
 
 
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/bundle.js"></script>
@@ -615,18 +679,27 @@
 });
 
 
- new Litepicker({
+document.addEventListener('DOMContentLoaded', function () {
+    const picker = new Litepicker({
         element: document.getElementById('daterange'),
         singleMode: false,
         autoApply: true,
-        format: 'YYYY-MM-DD', // atau 'DD/MM/YYYY' sesuai kebutuhan
+        format: 'YYYY-MM-DD',
         dropdowns: {
             minYear: 2020,
             maxYear: new Date().getFullYear(),
             months: true,
             years: true
+        },
+        setup: (picker) => {
+            picker.on('selected', (startDate, endDate) => {
+                const formatted = startDate.format('YYYY-MM-DD') + ' - ' + endDate.format('YYYY-MM-DD');
+                document.getElementById('daterange').value = formatted;
+                document.getElementById('filterForm').submit();
+            });
         }
     });
+});
 </script>
 
  
